@@ -27,9 +27,29 @@ def digitsNeverDecrease(digits):
     return True
 
 
-def meetsCriteria(number):
+def meetsPartOneCriteria(number):
     digits = toDigits(number)
     return hasTwoSameAdjacentDigits(digits) and digitsNeverDecrease(digits)
+
+
+def hasExactlyTwoSameAdjacentDigits(digits):
+    sameCount = 1
+    previousDigit = 10
+    for digit in digits:
+        if digit == previousDigit:
+            sameCount = sameCount + 1
+        elif sameCount == 2:
+            return True
+        else:
+            sameCount = 1
+
+        previousDigit = digit
+    return sameCount == 2
+
+
+def meetsPartTwoCriteria(number):
+    digits = toDigits(number)
+    return hasExactlyTwoSameAdjacentDigits(digits) and digitsNeverDecrease(digits)
 
 
 print(str(toDigits(123)))
@@ -39,12 +59,22 @@ print("digitsNeverDecrease(122): " + str(digitsNeverDecrease(toDigits(122))))
 print("hasTwoSameAdjacentDigits(123): " + str(hasTwoSameAdjacentDigits(toDigits(123))))
 print("hasTwoSameAdjacentDigits(122): " + str(hasTwoSameAdjacentDigits(toDigits(122))))
 print("hasTwoSameAdjacentDigits(222): " + str(hasTwoSameAdjacentDigits(toDigits(222))))
+print("hasExactlyTwoSameAdjacentDigits(122)=True: " + str(hasExactlyTwoSameAdjacentDigits(toDigits(122))))
+print("hasExactlyTwoSameAdjacentDigits(222)=False: " + str(hasExactlyTwoSameAdjacentDigits(toDigits(222))))
+print("hasExactlyTwoSameAdjacentDigits(11222)=True: " + str(hasExactlyTwoSameAdjacentDigits(toDigits(11222))))
+print("hasExactlyTwoSameAdjacentDigits(11)=True: " + str(hasExactlyTwoSameAdjacentDigits(toDigits(11))))
+print("meetsPartTwoCriteria(112233)=True: " + str(meetsPartTwoCriteria(112233)))
+print("meetsPartTwoCriteria(123444)=False: " + str(meetsPartTwoCriteria(123444)))
+print("meetsPartTwoCriteria(111122)=True: " + str(meetsPartTwoCriteria(111122)))
 
-
-
-numThatMeetCriteria = 0
+numThatMeetPartOneCriteria = 0
+numThatMeetPartTwoCriteria = 0
 for i in range(272091, 815432 + 1):
-    if meetsCriteria(i):
-        numThatMeetCriteria = numThatMeetCriteria + 1
+    if meetsPartOneCriteria(i):
+        numThatMeetPartOneCriteria = numThatMeetPartOneCriteria + 1
+    if meetsPartTwoCriteria(i):
+        numThatMeetPartTwoCriteria = numThatMeetPartTwoCriteria + 1
 print("Part 1:")
-print(str(numThatMeetCriteria))
+print(str(numThatMeetPartOneCriteria))
+print("Part 2:")
+print(str(numThatMeetPartTwoCriteria))
