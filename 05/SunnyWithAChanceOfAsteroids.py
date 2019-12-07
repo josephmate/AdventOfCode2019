@@ -2,54 +2,105 @@ import sys
 from functional import seq  # from PyFunctional
 
 
+def saveArg(memory, argMode, memoryPosition, valueToSave):
+    if memoryPosition >= len(memory):
+        raise Exception("saveArg: index out of bounds " + str(argMode) + " " + str(memoryPosition) + " " + str(len(memory)))
+    if argMode == 0:
+        outputPosn = memory[memoryPosition]
+        if outputPosn >= len(memory):
+            raise Exception("saveArg: index out of bounds " + str(argMode) + " " + str(memoryPosition) + " " + str(outputPosn) + " " + str(len(memory)))
+        memory[outputPosn] = valueToSave
+    elif argMode == 1:
+        memory[memoryPosition] = valueToSave
+    else:
+        raise Exception("saveArg: unexpected argMode " + str(argMode) + " " + str(memoryPosition) + " " + str(valueToSave))
+
+
+def getArgValue(memory, argMode, memoryPosition):
+    if memoryPosition >= len(memory):
+        raise Exception("getArgValue: index out of bounds " + str(argMode) + " " + str(memoryPosition) + " " + str(len(memory)))
+    if argMode == 0:
+        if memory[memoryPosition] >= len(memory):
+            raise Exception("getArgValue: index out of bounds " + str(argMode) + " " + str(memoryPosition) + " " + str(memory[memoryPosition]) + " " + str(len(memory)))
+        return memory[memory[memoryPosition]]
+    elif argMode == 1:
+        return memory[memoryPosition]
+    else:
+        raise Exception("getArgValue: unexpected argMode " + str(argMode) + " " + str(memoryPosition))
+
+
 def runProgram(memory):
     currentPosition = 0
     while True:
-        currentOpCode = memory[currentPosition]
+        if currentPosition >= len(memory):
+            raise Exception("ran out of memory. unexpected currentPosition " + str(currentPosition) + " len" + str(len(memory)))
+
+        encodedOpCode = memory[currentPosition]
+        # ABCDE
+        #  1002
+        #
+        # DE - two-digit opcode,      02 == opcode 2
+        #  C - mode of 1st parameter,  0 == position mode
+        #  B - mode of 2nd parameter,  1 == immediate mode
+        #  A - mode of 3rd parameter,  0 == position mode,
+        #                                   omitted due to being a leading zero
+        currentOpCode = encodedOpCode % 100  # get last two digits
+        firstArgMode = (encodedOpCode // 100) % 10  # get 3rd digit
+        secondArgMode = (encodedOpCode // 1000) % 10  # get 4th digit
+        thirdArgMode = (encodedOpCode // 10000) % 10  # get 5th digit
+
         if currentOpCode == 99:
             break
 
-        firstArgPosn = memory[currentPosition + 1]
-        secondArgPosn = memory[currentPosition + 2]
-        outputPosn = memory[currentPosition + 3]
-        if currentOpCode == 1:
-            # additions
-            memory[outputPosn] = memory[firstArgPosn] + memory[secondArgPosn]
-        elif currentOpCode == 2:
-            # multiplication
-            memory[outputPosn] = memory[firstArgPosn] * memory[secondArgPosn]
+        if currentOpCode == 1 or currentOpCode == 2:
+            firstArgVal = getArgValue(memory, firstArgMode, currentPosition + 1)
+            secondArgVal = getArgValue(memory, secondArgMode, currentPosition + 2)
+
+            if currentOpCode == 1:
+                opCodeResult = firstArgVal + secondArgVal
+            elif currentOpCode == 2:
+                opCodeResult = firstArgVal * secondArgVal
+
+            saveArg(memory, thirdArgMode, currentPosition + 3, opCodeResult)
+            currentPosition = currentPosition + 4
+
+        elif currentOpCode == 3:
+            inputFromUser = 1
+            saveArg(memory, firstArgMode, currentPosition + 1, inputFromUser)
+            currentPosition = currentPosition + 2
+        elif currentOpCode == 4:
+            firstArgVal = getArgValue(memory, firstArgMode, currentPosition + 1)
+            print(firstArgVal)
+            currentPosition = currentPosition + 2
         else:
             raise Exception(str(currentOpCode) + " is not recognized")
-        currentPosition = currentPosition + 4
 
     return memory
 
 
-inputMemory = (seq(sys.stdin.readline().split(','))
-               .map(lambda token: token.rstrip())
-               .map(lambda token: int(token))
-               ).to_list()
+def parseMemoryFromStr(programStr):
+    return (seq(programStr.split(","))
+            .map(lambda token: token.rstrip())
+            .map(lambda token: int(token))
+            .to_list())
 
-part1Memory = inputMemory.copy()
-# replace position 1 with the value 12
-part1Memory[1] = 12
-# and replace position 2 with the value 2.
-part1Memory[2] = 2
-runProgram(part1Memory)
-print(str(part1Memory[0]))
 
-# Each of the two input values will be between 0 and 99, inclusive.
-for noun in range(0, 100):
-    # Each of the two input values will be between 0 and 99, inclusive.
-    for verb in range(0, 100):
-        part2Memory = inputMemory.copy()
-        # The inputs should still be provided to the program by replacing the values at addresses 1 and 2, just like before.
-        # In this program, the value placed in address 1 is called the noun, and the value placed in address 2 is called the verb.
-        part2Memory[1] = noun
-        part2Memory[2] = verb
-        runProgram(part2Memory)
-        # Once the program has halted, its output is available at address 0, also just like before. Each time you try a pair of inputs, make sure you first reset the computer's memory to the values in the program (your puzzle input) - in other words, don't reuse memory from a previous attempt.
-        # Find the input noun and verb that cause the program to produce the output 19690720.
-        if part2Memory[0] == 19690720:
-            # What is 100 * noun + verb? (For example, if noun=12 and verb=2, the answer would be 1202.)
-            print(str(100 * noun + verb))
+def runProgramFromString(programStr):
+    return runProgram(parseMemoryFromStr(programStr))
+
+try:
+    print("3,5,4,5,99,0 should print 1")
+    print(str(runProgramFromString("3,5,4,5,99,0")))
+    print("1,7,8,5,104,0,99,7,8 should print 4")
+    print(str(runProgramFromString("1,7,8,5,104,0,99,1,3")))
+    print("101,7,8,5,104,0,99,1,2 should print 10")
+    print(str(runProgramFromString("101,7,8,5,104,0,99,1,3")))
+    print("101,7,8,5,104,0,99,1,2 should print 9")
+    print(str(runProgramFromString("1001,7,8,5,104,0,99,1,3")))
+    print("101,7,8,5,104,0,99,1,2 should print 4")
+    print(str(runProgramFromString("10001,7,8,5,4,3,99,1,3")))
+except Exception as e:
+    print(str(e))
+
+with open('input.txt', 'r') as fp:
+    print(str(runProgramFromString(fp.readline())))
