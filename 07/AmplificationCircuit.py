@@ -31,6 +31,7 @@ def getArgValue(memory, argMode, memoryPosition):
 
 def runProgram(memory, inputFromUser):
     currentPosition = 0
+    inputPosition = 0
     while True:
         if currentPosition >= len(memory):
             raise Exception("ran out of memory. unexpected currentPosition " + str(currentPosition) + " len" + str(len(memory)))
@@ -68,13 +69,17 @@ def runProgram(memory, inputFromUser):
 
         # get input
         elif currentOpCode == 3:
-            saveArg(memory, firstArgMode, currentPosition + 1, inputFromUser)
+            if inputPosition >= len(inputFromUser):
+                raise Exception("ran out of user input: " + str(inputPosition) + " " + str(inputFromUser))
+            currentInput = inputFromUser[inputPosition]
+            saveArg(memory, firstArgMode, currentPosition + 1, currentInput)
             currentPosition = currentPosition + 2
+            inputPosition = inputPosition + 1
 
         # print
         elif currentOpCode == 4:
             firstArgVal = getArgValue(memory, firstArgMode, currentPosition + 1)
-            print(firstArgVal)
+            return firstArgVal
             currentPosition = currentPosition + 2
 
         # jump if
@@ -117,12 +122,39 @@ def parseMemoryFromStr(programStr):
             .map(lambda token: int(token))
             .to_list())
 
+def permutationImpl(permutationSet, permutationSoFar):
+    if len(permutationSet) == 0:
+        return [permutationSoFar.copy()]
 
-def runProgramFromString(programStr, inputFromUser):
-    return runProgram(parseMemoryFromStr(programStr), inputFromUser)
+    result = []
+    for entry in permutationSet.copy():
+        permutationSet.remove(entry)
+        permutationSoFar.append(entry)
+        result = result + permutationImpl(permutationSet, permutationSoFar)
+        permutationSoFar.pop()
+        permutationSet.add(entry)
+
+    return result
+
+def permutations(listToPermutate):
+    permuatationSet = set()
+    for item in listToPermutate:
+        permuatationSet.add(item)
+    return permutationImpl(permuatationSet, [])
 
 def solve(programString):
-    return 0
+    originalMemory = parseMemoryFromStr(programString)
+    allPhaseSettingSequences = permutations([0, 1, 2, 3, 4])
+    for permutation in allPhaseSettingSequences:
+        maxSoFar = 0
+        previousResult = 0
+        for phaseSetting in permutation:
+            previousResult = runProgram(originalMemory.copy(), [phaseSetting, previousResult])
+
+        if previousResult > maxSoFar:
+            maxSoFar = previousResult
+
+    return maxSoFar
 
 try:
     print("should print 43210")
