@@ -145,8 +145,8 @@ def permutations(listToPermutate):
 def solve(programString):
     originalMemory = parseMemoryFromStr(programString)
     allPhaseSettingSequences = permutations([0, 1, 2, 3, 4])
+    maxSoFar = 0
     for permutation in allPhaseSettingSequences:
-        maxSoFar = 0
         previousResult = 0
         for phaseSetting in permutation:
             previousResult = runProgram(originalMemory.copy(), [phaseSetting, previousResult])
