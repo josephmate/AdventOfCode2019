@@ -113,7 +113,7 @@ def runProgram(memory, inputFromUser, startingPosition=0):
         else:
             raise Exception(str(currentOpCode) + " is not recognized")
 
-    return "DONE"
+    return "DONE", 0
 
 
 def parseMemoryFromStr(programStr):
@@ -149,7 +149,7 @@ def solve(programString):
     for permutation in allPhaseSettingSequences:
         previousResult = 0
         for phaseSetting in permutation:
-            previousResult = runProgram(originalMemory.copy(), [phaseSetting, previousResult])
+            (previousResult, currentPosition) = runProgram(originalMemory.copy(), [phaseSetting, previousResult])
 
         if previousResult > maxSoFar:
             maxSoFar = previousResult
@@ -159,17 +159,22 @@ def solve(programString):
 
 def runUntilCompletion(permutation, originalMemory):
     phaseMemory = []
-    phaseMemory = []
-    for i in range(0, 5):
+    instructionPointers = []
+
+    previousResult = 0
+    for idx in range(0, 5):
         phaseMemory.append(originalMemory.copy())
+        phaseSetting = permutation[idx]
+        (previousResult, instructionPointer) = runProgram(phaseMemory[idx], [phaseSetting, previousResult])
+        instructionPointers.append(instructionPointer)
 
     while True:
         for idx in range(0, 5):
-            phaseSetting = permutation[idx]
-            currentResult = runProgram(originalMemory.copy(), [phaseSetting, previousResult])
+            (currentResult, instructionPointer) = runProgram(phaseMemory[idx], [previousResult], instructionPointers[idx])
             if currentResult == "DONE":
                 return previousResult
             previousResult = currentResult
+            instructionPointers[idx] = instructionPointer
 
 
 def solvePart2(programString):
@@ -204,7 +209,7 @@ try:
     # 22  1005,28,6,          jump if addr 28 is not 0, jump to 6
     # 25  99,
     # 26  0,0,5
-    print(str(solve("3,26,1001,26,-4,26,3,27,1002,27,2,27,1,27,26,27,4,27,1001,28,-1,28,1005,28,6,99,0,0,5")))
+    print(str(solvePart2("3,26,1001,26,-4,26,3,27,1002,27,2,27,1,27,26,27,4,27,1001,28,-1,28,1005,28,6,99,0,0,5")))
     print("should print 18216")
     #  0  3,52,
     #  2  1001,52,-5,52,
@@ -223,7 +228,7 @@ try:
     # 49  1005,56,6,
     # 52  99,
     # 53  0,0,0,0,10
-    print(str(solve("3,52,1001,52,-5,52,3,53,1,52,56,54,1007,54,5,55,1005,55,26,1001,54,-5,54,1105,1,12,1,53,54,53,1008,54,0,55,1001,55,1,55,2,53,55,53,4,53,1001,56,-1,56,1005,56,6,99,0,0,0,0,10")))
+    print(str(solvePart2("3,52,1001,52,-5,52,3,53,1,52,56,54,1007,54,5,55,1005,55,26,1001,54,-5,54,1105,1,12,1,53,54,53,1008,54,0,55,1001,55,1,55,2,53,55,53,4,53,1001,56,-1,56,1005,56,6,99,0,0,0,0,10")))
 except Exception as e:
     print(str(e))
 
