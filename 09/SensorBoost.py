@@ -15,8 +15,10 @@ def saveArg(memory, argMode, memoryPosition, relativeBase, valueToSave):
         allocateMoreMemory(memory, memoryPosition)
         memory[memoryPosition] = valueToSave
     elif argMode == 2: # relative base
-        allocateMoreMemory(memory, memoryPosition + relativeBase)
-        memory[memoryPosition + relativeBase] = valueToSave
+        allocateMoreMemory(memory, memoryPosition)
+        adjustment = memory[memoryPosition]
+        allocateMoreMemory(memory, adjustment + relativeBase)
+        memory[adjustment + relativeBase] = valueToSave
     else:
         raise Exception("saveArg: unexpected argMode " + str(argMode) + " " + str(memoryPosition) + " " + str(valueToSave))
 
@@ -30,8 +32,10 @@ def getArgValue(memory, argMode, memoryPosition, relativeBase):
         allocateMoreMemory(memory, memoryPosition)
         return memory[memoryPosition]
     elif argMode == 2:
-        allocateMoreMemory(memory, memoryPosition + relativeBase)
-        return memory[memoryPosition + relativeBase]
+        allocateMoreMemory(memory, memoryPosition)
+        adjustment = memory[memoryPosition]
+        allocateMoreMemory(memory, adjustment + relativeBase)
+        return memory[adjustment + relativeBase]
     else:
         raise Exception("getArgValue: unexpected argMode " + str(argMode) + " " + str(memoryPosition))
 
