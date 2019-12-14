@@ -1,33 +1,36 @@
 import sys
 from functional import seq  # from PyFunctional
 
+def allocateMoreMemory(memory, memoryPosition):
+    while memoryPosition >= len(memory):
+        memory.append(0)
 
 def saveArg(memory, argMode, memoryPosition, relativeBase, valueToSave):
-    if memoryPosition >= len(memory):
-        raise Exception("saveArg: index out of bounds " + str(argMode) + " " + str(memoryPosition) + " " + str(len(memory)))
     if argMode == 0:
+        allocateMoreMemory(memory, memoryPosition)
         outputPosn = memory[memoryPosition]
-        if outputPosn >= len(memory):
-            raise Exception("saveArg: index out of bounds " + str(argMode) + " " + str(memoryPosition) + " " + str(outputPosn) + " " + str(len(memory)))
+        allocateMoreMemory(memory, outputPosn)
         memory[outputPosn] = valueToSave
     elif argMode == 1:
+        allocateMoreMemory(memory, memoryPosition)
         memory[memoryPosition] = valueToSave
     elif argMode == 2: # relative base
+        allocateMoreMemory(memory, memoryPosition + relativeBase)
         memory[memoryPosition + relativeBase] = valueToSave
     else:
         raise Exception("saveArg: unexpected argMode " + str(argMode) + " " + str(memoryPosition) + " " + str(valueToSave))
 
 
 def getArgValue(memory, argMode, memoryPosition, relativeBase):
-    if memoryPosition >= len(memory):
-        raise Exception("getArgValue: index out of bounds " + str(argMode) + " " + str(memoryPosition) + " " + str(len(memory)))
     if argMode == 0:
-        if memory[memoryPosition] >= len(memory):
-            raise Exception("getArgValue: index out of bounds " + str(argMode) + " " + str(memoryPosition) + " " + str(memory[memoryPosition]) + " " + str(len(memory)))
+        allocateMoreMemory(memory, memoryPosition)
+        allocateMoreMemory(memory, memory[memoryPosition])
         return memory[memory[memoryPosition]]
     elif argMode == 1:
+        allocateMoreMemory(memory, memoryPosition)
         return memory[memoryPosition]
     elif argMode == 2:
+        allocateMoreMemory(memory, memoryPosition + relativeBase)
         return memory[memoryPosition + relativeBase]
     else:
         raise Exception("getArgValue: unexpected argMode " + str(argMode) + " " + str(memoryPosition))
@@ -137,10 +140,16 @@ def solvePart1(programStr, input):
 
 try:
     print("takes no input and produces a copy of itself as output")
+    #  0 109,1,            increment relative base by 1
+    #  2 204,-1,           print -1 relative to base
+    #  4 1001,100,1,100,   add addr 100 and value 1 and save in addr 100
+    #  8 1008,100,16,101,  equals addr 100 and 16, put 1 into addr 101
+    # 12 1006,101,0,       jump to 0 if addr 101  is 0
+    # 15 99                halt
     solvePart1("109,1,204,-1,1001,100,1,100,1008,100,16,101,1006,101,0,99", [])
-    print("")
+    print("should output a 16-digit number")
     solvePart1("1102,34915192,34915192,7,4,7,99,0", [])
-    print("")
+    print("should output 1125899906842624")
     solvePart1("104,1125899906842624,99", [])
 except Exception as e:
     print(str(e))
