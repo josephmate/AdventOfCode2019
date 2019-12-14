@@ -2,7 +2,7 @@ import sys
 from functional import seq  # from PyFunctional
 
 
-def saveArg(memory, argMode, memoryPosition, valueToSave):
+def saveArg(memory, argMode, memoryPosition, relativeBase, valueToSave):
     if memoryPosition >= len(memory):
         raise Exception("saveArg: index out of bounds " + str(argMode) + " " + str(memoryPosition) + " " + str(len(memory)))
     if argMode == 0:
@@ -12,11 +12,13 @@ def saveArg(memory, argMode, memoryPosition, valueToSave):
         memory[outputPosn] = valueToSave
     elif argMode == 1:
         memory[memoryPosition] = valueToSave
+    elif argMode == 2: # relative base
+        memory[memoryPosition + relativeBase] = valueToSave
     else:
         raise Exception("saveArg: unexpected argMode " + str(argMode) + " " + str(memoryPosition) + " " + str(valueToSave))
 
 
-def getArgValue(memory, argMode, memoryPosition):
+def getArgValue(memory, argMode, memoryPosition, relativeBase):
     if memoryPosition >= len(memory):
         raise Exception("getArgValue: index out of bounds " + str(argMode) + " " + str(memoryPosition) + " " + str(len(memory)))
     if argMode == 0:
@@ -25,12 +27,15 @@ def getArgValue(memory, argMode, memoryPosition):
         return memory[memory[memoryPosition]]
     elif argMode == 1:
         return memory[memoryPosition]
+    elif argMode == 2:
+        return memory[memoryPosition + relativeBase]
     else:
         raise Exception("getArgValue: unexpected argMode " + str(argMode) + " " + str(memoryPosition))
 
 
 def runProgram(memory, inputFromUser, startingPosition=0):
     currentPosition = startingPosition
+    relativeBase = 0
     inputPosition = 0
     while True:
         if currentPosition >= len(memory):
@@ -56,15 +61,15 @@ def runProgram(memory, inputFromUser, startingPosition=0):
 
         # add or multiply
         if currentOpCode == 1 or currentOpCode == 2:
-            firstArgVal = getArgValue(memory, firstArgMode, currentPosition + 1)
-            secondArgVal = getArgValue(memory, secondArgMode, currentPosition + 2)
+            firstArgVal = getArgValue(memory, firstArgMode, currentPosition + 1, relativeBase)
+            secondArgVal = getArgValue(memory, secondArgMode, currentPosition + 2, relativeBase)
 
             if currentOpCode == 1:
                 opCodeResult = firstArgVal + secondArgVal
             elif currentOpCode == 2:
                 opCodeResult = firstArgVal * secondArgVal
 
-            saveArg(memory, thirdArgMode, currentPosition + 3, opCodeResult)
+            saveArg(memory, thirdArgMode, currentPosition + 3, relativeBase, opCodeResult)
             currentPosition = currentPosition + 4
 
         # get input
@@ -72,20 +77,20 @@ def runProgram(memory, inputFromUser, startingPosition=0):
             if inputPosition >= len(inputFromUser):
                 raise Exception("ran out of user input: " + str(inputPosition) + " " + str(inputFromUser))
             currentInput = inputFromUser[inputPosition]
-            saveArg(memory, firstArgMode, currentPosition + 1, currentInput)
+            saveArg(memory, firstArgMode, currentPosition + 1, relativeBase, currentInput)
             currentPosition = currentPosition + 2
             inputPosition = inputPosition + 1
 
         # print
         elif currentOpCode == 4:
-            firstArgVal = getArgValue(memory, firstArgMode, currentPosition + 1)
+            firstArgVal = getArgValue(memory, firstArgMode, currentPosition + 1, relativeBase)
             currentPosition = currentPosition + 2
-            return firstArgVal, currentPosition
+            print(firstArgVal)
 
         # jump if
         elif currentOpCode == 5 or currentOpCode == 6:
-            conditional = getArgValue(memory, firstArgMode, currentPosition + 1)
-            whereToJump = getArgValue(memory, secondArgMode, currentPosition + 2)
+            conditional = getArgValue(memory, firstArgMode, currentPosition + 1, relativeBase)
+            whereToJump = getArgValue(memory, secondArgMode, currentPosition + 2, relativeBase)
             # jump-if-true (jump-if-non-zero)
             if currentOpCode == 5 and conditional != 0:
                 currentPosition = whereToJump
@@ -97,8 +102,8 @@ def runProgram(memory, inputFromUser, startingPosition=0):
 
         # comparison
         elif currentOpCode == 7 or currentOpCode == 8:
-            firstArgVal = getArgValue(memory, firstArgMode, currentPosition + 1)
-            secondArgVal = getArgValue(memory, secondArgMode, currentPosition + 2)
+            firstArgVal = getArgValue(memory, firstArgMode, currentPosition + 1, relativeBase)
+            secondArgVal = getArgValue(memory, secondArgMode, currentPosition + 2, relativeBase)
             valToSave = 0
             # less than
             if currentOpCode == 7 and firstArgVal < secondArgVal:
@@ -106,8 +111,13 @@ def runProgram(memory, inputFromUser, startingPosition=0):
             # equals
             elif currentOpCode == 8 and firstArgVal == secondArgVal:
                 valToSave = 1
-            saveArg(memory, thirdArgMode, currentPosition + 3, valToSave)
+            saveArg(memory, thirdArgMode, currentPosition + 3, relativeBase, valToSave)
             currentPosition = currentPosition + 4
+
+        elif currentOpCode == 9:
+            firstArgVal = getArgValue(memory, firstArgMode, currentPosition + 1, relativeBase)
+            currentPosition = currentPosition + 2
+            relativeBase = relativeBase + firstArgVal
 
         # unrecognized
         else:
@@ -123,7 +133,7 @@ def parseMemoryFromStr(programStr):
             .to_list())
 
 def solvePart1(programStr, input):
-    runProgram(parseMemoryFromStr(programStr, input))
+    runProgram(parseMemoryFromStr(programStr), input)
 
 try:
     print("takes no input and produces a copy of itself as output")
