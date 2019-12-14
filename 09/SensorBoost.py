@@ -162,3 +162,5 @@ with open('input.txt', 'r') as fp:
     line = fp.readline().rstrip()
     print("Part 1")
     solvePart1(line, [1])
+    print("Part 2")
+    solvePart1(line, [2])
