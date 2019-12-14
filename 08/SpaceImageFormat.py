@@ -11,7 +11,7 @@ def countDigits(layer, digit):
     return digitCount
 
 
-def solve(layers):
+def solvePart1(layers):
     fewestZeros = sys.maxsize
     fewestZeroLayer = None
 
@@ -44,8 +44,46 @@ def assemble(line, width, height):
 inputSmall = "123456789012"
 smallWidth = 3
 smallHeight = 2
-print(str(solve(assemble(inputSmall, smallWidth, smallHeight))))
+print(str(solvePart1(assemble(inputSmall, smallWidth, smallHeight))))
+
+def emptyLayer(width, height):
+    layerSoFar = []
+    for row in range(0, height):
+        row = []
+        for column in range(0, width):
+            row.append(0)
+        layerSoFar.append(row)
+    return layerSoFar
+
+def decodeImage(layers, width, height):
+    layers.reverse()
+    layerSoFar = emptyLayer(width, height)
+
+    for layer in layers:
+        for rowIdx in range(0, height):
+            layerSoFarRow = layerSoFar[rowIdx]
+            currentRow = layer[rowIdx]
+            for columnIdx in range(0, width):
+                layerSoFarCell = layerSoFarRow[columnIdx]
+                currentCell = currentRow[columnIdx]
+                if currentCell == 0 or currentCell == 1:
+                    layerSoFarRow[columnIdx] = currentCell
+
+    return layerSoFar
+
+def printImage(decodedImage):
+    for row in decodedImage:
+        for cell in row:
+            if cell == 0:
+                print(" ", end='')
+            elif cell == 1:
+                print("*", end='')
+        print()
+
+printImage(decodeImage(assemble("0222112222120000", 2, 2), 2, 2))
 
 with open('input.txt', 'r') as fp:
     line = fp.readline().rstrip()
-    print(solve(assemble(line, 25, 6)))
+    layers = assemble(line, 25, 6)
+    print(solvePart1(layers))
+    printImage(decodeImage(layers, 25, 6))
