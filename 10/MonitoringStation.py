@@ -50,8 +50,8 @@ def countVisibleAsteroids(r, c, asteroids):
 
     for asteroid in asteroidsSortedByDistance:
         if asteroidHitMap[asteroid] == 1:
-            rvector = r - asteroid[0]
-            cvector = c - asteroid[1]
+            rvector = asteroid[0] - r
+            cvector = asteroid[1] - c
             divisor = gcd(rvector, cvector)
             rvector = rvector // divisor
             cvector = cvector // divisor
@@ -61,8 +61,8 @@ def countVisibleAsteroids(r, c, asteroids):
                    and maxC >= currentC >= 0):
                 if (currentR, currentC) in asteroidHitMap:
                     asteroidHitMap[(currentR, currentC)] = 0
-                currentR = currentR + 1
-                currentC = currentC + 1
+                currentR = currentR + rvector
+                currentC = currentC + cvector
 
     return sum(asteroidHitMap.values())
 
@@ -109,6 +109,7 @@ asteroidStr = """......#.#.
 .#....####"""
 asteroidStr = asteroidStr.split("\n")
 print("Best is 5,8 with 33 other asteroids detected")
+print(countVisibleAsteroids(8, 5, parseMap(asteroidStr)))
 print(findBestLocation(asteroidStr))
 
 asteroidStr = """#.#...#.#.
