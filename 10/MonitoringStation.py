@@ -57,7 +57,7 @@ def asteroidsToMap(asteroids):
     return asteroidHitMap
 
 
-def countVisibleAsteroids(r, c, asteroids):
+def findVisibleAsteroids(r, c, asteroids):
     asteroidsSortedByDistance = asteroids.copy();
     asteroidsSortedByDistance.remove((r, c))
     asteroidsSortedByDistance.sort(key=lambda coordinate: distance(r, c, coordinate))
@@ -81,7 +81,16 @@ def countVisibleAsteroids(r, c, asteroids):
                 currentR = currentR + rvector
                 currentC = currentC + cvector
 
-    return sum(asteroidHitMap.values())
+    visibleAsteroids = []
+    for key, value in asteroidHitMap.items():
+        if value == 1:
+            visibleAsteroids.append(key)
+
+    return visibleAsteroids
+
+
+def countVisibleAsteroids(r, c, asteroids):
+    return len(findVisibleAsteroids(r, c, asteroids))
 
 
 def calcAllVisibleCounts(asteroids):
@@ -130,6 +139,39 @@ def findBestLocation(lines):
             bestLocation = coord
 
     return maxVisibleAsteroids, bestLocation
+
+
+#               |
+#               |
+#               |
+#               |
+# --------------+-----------------
+#               |
+#               |
+#               |
+#               |
+def rotationalSort(r, c, coordinate):
+
+
+def destroyAsteroidsInOrder(r, c, asteroids):
+    asteroidsDestroyed = []
+    asteroidsRemaining = set()
+    for asteroid in asteroids:
+        asteroidsRemaining.add(asteroid)
+    asteroidsRemaining.remove((r, c))
+
+    while len(asteroidsRemaining) > 0:
+        asteroidsToDestroy = findVisibleAsteroids(r ,c, list(asteroidsRemaining))
+        asteroidsToDestroy.sort(key=lambda coordinate: rotationalSort(r, c, coordinate))
+
+        for asteroidToDestroy in asteroidsToDestroy:
+            asteroidsDestroyed.add(asteroidToDestroy)
+            asteroidsRemaining.remove(asteroidToDestroy)
+
+
+
+
+    return asteroidsDestroyed
 
 
 print(str(gcd(2, -1)))
@@ -203,6 +245,26 @@ printAsteroids(parseMap(asteroidStr))
 print("Best is 6,3 with 41 other asteroids detected")
 print(findBestLocation(asteroidStr))
 
+asteroidStr = """
+.#....#####...#..
+##...##.#####..##
+##...#...#.#####.
+..#.....#...###..
+..#.#.....#....##
+""".split("\n")
+printAsteroids(parseMap(asteroidStr))
+print("3, 8")
+expected = [
+    (1, 8),
+    (0, 9),
+    (1, 9),
+    (0, 10),
+    (2, 9)
+]
+print(str(expected))
+print(str(destroyAsteroidsInOrder(3, 8, parseMap(asteroidStr))))
+
+
 asteroidStr = """.#..##.###...#######
 ##.############..##.
 .#.######.########.#
@@ -229,7 +291,22 @@ printAsteroids(parseMap(asteroidStr))
 print("Best is 11,13 with 210 other asteroids detected")
 print(findBestLocation(asteroidStr))
 
+actuals = destroyAsteroidsInOrder(13, 11, parseMap(asteroidStr))
+print("12,11 == " + str(actuals[1-1]))
+print("1,12 == " + str(actuals[2-1]))
+print("2,12 == " + str(actuals[3-1]))
+print("8,12 == " + str(actuals[10-1]))
+print("0,16 == " + str(actuals[20-1]))
+print("9,16 == " + str(actuals[50-1]))
+print("16,10 == " + str(actuals[100-1]))
+print("2,8 == " + str(actuals[200-1]))
+print("9,10 == " + str(actuals[201-1]))
+print("1,11 == " + str(actuals[299-1]))
+
 with open('input.txt', 'r') as fp:
     lines = fp.readlines()
     print("Part 1")
-    print(findBestLocation(lines))
+    visibleAsteroidsCount, coordinates = findBestLocation(lines)
+    print(str(visibleAsteroidsCount) + " " + str(coordinates))
+
+
