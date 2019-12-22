@@ -163,6 +163,21 @@ print("1,-1 should have quadrant  2 == " + str(getQuadrant((1, -1))))
 print("0,-1 should have quadrant  3 == " + str(getQuadrant((0, -1))))
 print("-1,-1 should have quadrant  3 == " + str(getQuadrant((0, -1))))
 
+
+def div(num, denom):
+    if denom == 0:
+        return sys.maxsize
+    return abs(num) / abs(denom)
+
+
+def verticalSlope(coord):
+    return div(coord[0], coord[1])
+
+
+def horizontalSlope(coord):
+    return div(coord[1], coord[0])
+
+
 #               -ve
 #                |
 #       3(-,-)   |        0 (-,+)
@@ -183,25 +198,13 @@ def rotationalCompare(firstCoord, secondCoord):
 
     # at this point we know they are in the same quadrant
     if firstQuad == 0:
-        colComp = cmp(firstCoord[1], secondCoord[1])
-        if not(colComp == 0):
-            return colComp
-        return cmp(abs(secondCoord[0]), abs(firstCoord[0]))
+        return cmp(verticalSlope(secondCoord), verticalSlope(firstCoord))
     elif firstQuad == 1:
-        rowComp = cmp(firstCoord[0], secondCoord[0])
-        if not (rowComp == 0):
-            return rowComp
-        return cmp(abs(secondCoord[1]), abs(firstCoord[1]))
+        return cmp(horizontalSlope(secondCoord), horizontalSlope(firstCoord))
     elif firstQuad == 2:
-        colComp = cmp(secondCoord[1], firstCoord[1])
-        if not (colComp == 0):
-            return colComp
-        return cmp(abs(secondCoord[0]), abs(firstCoord[0]))
+        return cmp(verticalSlope(secondCoord), verticalSlope(firstCoord))
     else: # firstQuad == 3:
-        rowComp = cmp(firstCoord[0], secondCoord[0])
-        if not (rowComp == 0):
-            return rowComp
-        return cmp(abs(secondCoord[1]), abs(firstCoord[1]))
+        return cmp(horizontalSlope(secondCoord), horizontalSlope(firstCoord))
 
     return 0
 
@@ -213,9 +216,9 @@ def rotationalCompare(firstCoord, secondCoord):
 # my original sort was incorrect
 # a should come before b
 # but since we compare column before row, that doesn't happen
-
-
+# as a result, i've added a D test case to some of the tests below
 # -ve
+#  |   D
 #  |
 #  |  B
 #  A  C
@@ -225,21 +228,25 @@ def rotationalCompare(firstCoord, secondCoord):
 A = (-2, 0)
 B = (-3, 2)
 C = (-2, 2)
+D = (-5, 3)
 print(str(A) + " " + str(B) + " -1 == " + str(rotationalCompare(A, B)))
 print(str(B) + " " + str(C) + " -1 == " + str(rotationalCompare(B, C)))
 print(str(A) + " " + str(C) + " -1 == " + str(rotationalCompare(A, C)))
+print(str(D) + " " + str(B) + " -1 == " + str(rotationalCompare(D, B)))
 # --+-A---------------v
 #   |                 e
 #   | CB
-#   |
+#   |    D
 #   |
 #  +ve
 A = (0, 2)
 B = (2, 3)
 C = (2, 2)
+D = (3, 5)
 print(str(A) + " " + str(B) + " -1 == " + str(rotationalCompare(A, B)))
 print(str(B) + " " + str(C) + " -1 == " + str(rotationalCompare(B, C)))
 print(str(A) + " " + str(C) + " -1 == " + str(rotationalCompare(A, C)))
+print(str(D) + " " + str(B) + " -1 == " + str(rotationalCompare(D, B)))
 # -              |
 # v--------------+-
 # e              |
@@ -429,5 +436,9 @@ with open('input.txt', 'r') as fp:
     print("Part 1")
     visibleAsteroidsCount, coordinates = findBestLocation(lines)
     print(str(visibleAsteroidsCount) + " " + str(coordinates))
+    actuals = destroyAsteroidsInOrder(coordinates[0], coordinates[1], parseMap(lines))
+    solution = actuals[200-1]
+    print(str(solution))
+    print(str(solution[1]*100 + solution[0]))
 
 
