@@ -190,14 +190,14 @@ def rotationalCompare(firstCoord, secondCoord):
         rowComp = cmp(firstCoord[0], secondCoord[0])
         if not (rowComp == 0):
             return rowComp
-        return cmp(abs(firstCoord[1]), abs(secondCoord[1]))
+        return cmp(abs(secondCoord[1]), abs(firstCoord[1]))
     elif firstQuad == 2:
         colComp = cmp(secondCoord[1], firstCoord[1])
         if not (colComp == 0):
             return colComp
         return cmp(abs(secondCoord[0]), abs(firstCoord[0]))
     else: # firstQuad == 3:
-        rowComp = cmp(secondCoord[0], firstCoord[0])
+        rowComp = cmp(firstCoord[0], secondCoord[0])
         if not (rowComp == 0):
             return rowComp
         return cmp(abs(secondCoord[1]), abs(firstCoord[1]))
@@ -238,8 +238,8 @@ print(str(A) + " " + str(C) + " -1 == " + str(rotationalCompare(A, C)))
 #                |
 #               +ve
 A = (2, 0)
-B = (3, 2)
-C = (2, 2)
+B = (3, -2)
+C = (2, -2)
 print(str(A) + " " + str(B) + " -1 == " + str(rotationalCompare(A, B)))
 print(str(B) + " " + str(C) + " -1 == " + str(rotationalCompare(B, C)))
 print(str(A) + " " + str(C) + " -1 == " + str(rotationalCompare(A, C)))
