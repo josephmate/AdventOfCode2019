@@ -145,13 +145,22 @@ def findBestLocation(lines):
     return maxVisibleAsteroids, bestLocation
 
 def getQuadrant(coord):
-    if coord[0] <= 0 and coord[1] >= 0:
+    if coord[0] < 0 and coord[1] >= 0:
         return 0
-    if coord[0] >= 0 and coord[1] >= 0:
+    if coord[0] >= 0 and coord[1] > 0:
         return 1
-    if coord[0] >= 0 and coord[1] <= 0:
+    if coord[0] > 0 and coord[1] <= 0:
         return 2
     return 3
+
+print("-1,0 should have quadrant 0 == " + str(getQuadrant((-1, 0))))
+print("-1,1 should have quadrant 0 == " + str(getQuadrant((-1, 1))))
+print("0,1 should have quadrant  1 == " + str(getQuadrant((0, 1))))
+print("1,1 should have quadrant  1 == " + str(getQuadrant((1, 1))))
+print("1,0 should have quadrant  2 == " + str(getQuadrant((1, 0))))
+print("1,-1 should have quadrant  2 == " + str(getQuadrant((1, -1))))
+print("0,-1 should have quadrant  3 == " + str(getQuadrant((0, -1))))
+print("-1,-1 should have quadrant  3 == " + str(getQuadrant((0, -1))))
 
 #               -ve
 #                |
@@ -194,6 +203,59 @@ def rotationalCompare(firstCoord, secondCoord):
         return cmp(abs(secondCoord[1]), abs(firstCoord[1]))
 
     return 0
+
+
+# -ve
+#  |
+#  |  B
+#  A  C
+#  |                 +
+# -+-----------------v
+#  |                 e
+A = (-2, 0)
+B = (-3, 2)
+C = (-2, 2)
+print(str(A) + " " + str(B) + " -1 == " + str(rotationalCompare(A, B)))
+print(str(B) + " " + str(C) + " -1 == " + str(rotationalCompare(B, C)))
+print(str(A) + " " + str(C) + " -1 == " + str(rotationalCompare(A, C)))
+# --+-A---------------v
+#   |                 e
+#   | CB
+#   |
+#   |
+#  +ve
+A = (0, 2)
+B = (2, 3)
+C = (2, 2)
+print(str(A) + " " + str(B) + " -1 == " + str(rotationalCompare(A, B)))
+print(str(B) + " " + str(C) + " -1 == " + str(rotationalCompare(B, C)))
+print(str(A) + " " + str(C) + " -1 == " + str(rotationalCompare(A, C)))
+# -              |
+# v--------------+-
+# e              |
+#              C A
+#              B |
+#                |
+#               +ve
+A = (2, 0)
+B = (3, 2)
+C = (2, 2)
+print(str(A) + " " + str(B) + " -1 == " + str(rotationalCompare(A, B)))
+print(str(B) + " " + str(C) + " -1 == " + str(rotationalCompare(B, C)))
+print(str(A) + " " + str(C) + " -1 == " + str(rotationalCompare(A, C)))
+#               -ve
+#                |
+#                |
+#             BC |
+# -              |
+# v------------A-+-
+# e              |
+A = (-2,  0)
+B = (-3, -2)
+C = (-2, -2)
+print(str(A) + " " + str(B) + " -1 == " + str(rotationalCompare(A, B)))
+print(str(B) + " " + str(C) + " -1 == " + str(rotationalCompare(B, C)))
+print(str(A) + " " + str(C) + " -1 == " + str(rotationalCompare(A, C)))
 
 def translateRotationalCompare(r, c):
     return lambda firstCoord, secondCoord: rotationalCompare((firstCoord[0] - r, firstCoord[1] - c),
@@ -342,6 +404,9 @@ print("16,10 == " + str(actuals[100-1]))
 print("2,8 == " + str(actuals[200-1]))
 print("9,10 == " + str(actuals[201-1]))
 print("1,11 == " + str(actuals[299-1]))
+
+
+
 
 with open('input.txt', 'r') as fp:
     lines = fp.readlines()
