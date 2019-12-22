@@ -1,6 +1,9 @@
+import functools
 import sys
 from functional import seq  # from PyFunctional
 import math
+
+from past.builtins import cmp
 
 
 def parseMap(lines):
@@ -59,7 +62,8 @@ def asteroidsToMap(asteroids):
 
 def findVisibleAsteroids(r, c, asteroids):
     asteroidsSortedByDistance = asteroids.copy();
-    asteroidsSortedByDistance.remove((r, c))
+    if (r,c) in asteroidsSortedByDistance:
+        asteroidsSortedByDistance.remove((r, c))
     asteroidsSortedByDistance.sort(key=lambda coordinate: distance(r, c, coordinate))
 
     (maxR, maxC) = getMaxRC(asteroids)
@@ -140,17 +144,60 @@ def findBestLocation(lines):
 
     return maxVisibleAsteroids, bestLocation
 
+def getQuadrant(coord):
+    if coord[0] <= 0 and coord[1] >= 0:
+        return 0
+    if coord[0] >= 0 and coord[1] >= 0:
+        return 1
+    if coord[0] >= 0 and coord[1] <= 0:
+        return 2
+    return 3
 
-#               |
-#               |
-#               |
-#               |
-# --------------+-----------------
-#               |
-#               |
-#               |
-#               |
-def rotationalSort(r, c, coordinate):
+#               -ve
+#                |
+#       3(-,-)   |        0 (-,+)
+#                |
+# -              |                 +
+# v--------------+-----------------v
+# e              |                 e
+#       2(+,-)   |       1  (+,+)
+#                |
+#                |
+#               +ve
+def rotationalCompare(firstCoord, secondCoord):
+    firstQuad = getQuadrant(firstCoord)
+    secondQuad = getQuadrant(secondCoord)
+    quadCmp = cmp(firstQuad, secondQuad)
+    if not(quadCmp == 0):
+        return quadCmp
+
+    # at this point we know they are in the same quadrant
+    if firstQuad == 0:
+        colComp = cmp(firstCoord[1], secondCoord[1])
+        if not(colComp == 0):
+            return colComp
+        return cmp(abs(secondCoord[0]), abs(firstCoord[0]))
+    elif firstQuad == 1:
+        rowComp = cmp(firstCoord[0], secondCoord[0])
+        if not (rowComp == 0):
+            return rowComp
+        return cmp(abs(firstCoord[1]), abs(secondCoord[1]))
+    elif firstQuad == 2:
+        colComp = cmp(secondCoord[1], firstCoord[1])
+        if not (colComp == 0):
+            return colComp
+        return cmp(abs(secondCoord[0]), abs(firstCoord[0]))
+    else: # firstQuad == 3:
+        rowComp = cmp(secondCoord[0], firstCoord[0])
+        if not (rowComp == 0):
+            return rowComp
+        return cmp(abs(secondCoord[1]), abs(firstCoord[1]))
+
+    return 0
+
+def translateRotationalCompare(r, c):
+    return lambda firstCoord, secondCoord: rotationalCompare((firstCoord[0] - r, firstCoord[1] - c),
+                                                             (secondCoord[0] - r, secondCoord[1] - c))
 
 
 def destroyAsteroidsInOrder(r, c, asteroids):
@@ -162,14 +209,11 @@ def destroyAsteroidsInOrder(r, c, asteroids):
 
     while len(asteroidsRemaining) > 0:
         asteroidsToDestroy = findVisibleAsteroids(r ,c, list(asteroidsRemaining))
-        asteroidsToDestroy.sort(key=lambda coordinate: rotationalSort(r, c, coordinate))
+        asteroidsToDestroy.sort(key=functools.cmp_to_key(translateRotationalCompare(r, c)))
 
         for asteroidToDestroy in asteroidsToDestroy:
-            asteroidsDestroyed.add(asteroidToDestroy)
+            asteroidsDestroyed.append(asteroidToDestroy)
             asteroidsRemaining.remove(asteroidToDestroy)
-
-
-
 
     return asteroidsDestroyed
 
@@ -245,8 +289,7 @@ printAsteroids(parseMap(asteroidStr))
 print("Best is 6,3 with 41 other asteroids detected")
 print(findBestLocation(asteroidStr))
 
-asteroidStr = """
-.#....#####...#..
+asteroidStr = """.#....#####...#..
 ##...##.#####..##
 ##...#...#.#####.
 ..#.....#...###..
@@ -254,15 +297,12 @@ asteroidStr = """
 """.split("\n")
 printAsteroids(parseMap(asteroidStr))
 print("3, 8")
-expected = [
-    (1, 8),
-    (0, 9),
-    (1, 9),
-    (0, 10),
-    (2, 9)
-]
-print(str(expected))
-print(str(destroyAsteroidsInOrder(3, 8, parseMap(asteroidStr))))
+actuals = destroyAsteroidsInOrder(3, 8, parseMap(asteroidStr))
+print("(1, 8) == " + str(actuals[0]))
+print("(0, 9) == " + str(actuals[1]))
+print("(1, 9) == " + str(actuals[2]))
+print("(0, 10) == " + str(actuals[3]))
+print("(2, 9) == " + str(actuals[4]))
 
 
 asteroidStr = """.#..##.###...#######
