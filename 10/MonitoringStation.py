@@ -144,6 +144,7 @@ def findBestLocation(lines):
 
     return maxVisibleAsteroids, bestLocation
 
+
 def getQuadrant(coord):
     if coord[0] < 0 and coord[1] >= 0:
         return 0
@@ -203,6 +204,15 @@ def rotationalCompare(firstCoord, secondCoord):
         return cmp(abs(secondCoord[1]), abs(firstCoord[1]))
 
     return 0
+
+
+# | a
+# |
+# |b
+# +--
+# my original sort was incorrect
+# a should come before b
+# but since we compare column before row, that doesn't happen
 
 
 # -ve
@@ -360,6 +370,12 @@ asteroidStr = """.#....#####...#..
 printAsteroids(parseMap(asteroidStr))
 print("3, 8")
 actuals = destroyAsteroidsInOrder(3, 8, parseMap(asteroidStr))
+#  01234567890123456
+# 0.#....###24...#..
+# 1##...##.13#67..9#
+# 2##...#...5.8####.
+# 3..#.....X...###..
+# 4..#.#.....#....##
 print("(1, 8) == " + str(actuals[0]))
 print("(0, 9) == " + str(actuals[1]))
 print("(1, 9) == " + str(actuals[2]))
